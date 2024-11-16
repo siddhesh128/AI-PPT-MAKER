@@ -7,19 +7,19 @@ const PreviewSlide = ({ content, isActive, theme }) => {
 
   const themes = {
     modern: {
-      primary: '#2563eb',
+      primary: '#1a4bff',
       secondary: '#3b82f6',
       accent: '#60a5fa'
     },
     tech: {
-      primary: '#7c3aed',
-      secondary: '#8b5cf6',
-      accent: '#a78bfa'
+      primary: '#6d28d9',
+      secondary: '#7c3aed',
+      accent: '#8b5cf6'
     },
     nature: {
-      primary: '#059669',
-      secondary: '#10b981',
-      accent: '#34d399'
+      primary: '#047857',
+      secondary: '#059669',
+      accent: '#10b981'
     }
   };
 
@@ -205,21 +205,25 @@ const PresentationPreview = ({ presentationData, onClose, onDownload, template }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg w-full max-w-7xl h-[90vh] flex flex-col">
-        {/* Header */}
+      <div className="bg-white rounded-lg w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+        {/* Updated Header with darker text */}
         <div className="flex justify-between items-center p-4 border-b border-gray-200">
-          <h2 className="text-2xl font-bold">Preview Presentation</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Preview Presentation</h2>
           <div className="flex items-center gap-4">
-            {/* Add Theme Selector */}
-            <div className="flex items-center gap-2">
-              <Palette className="w-4 h-4" />
+            {/* Updated Theme Selector with darker text */}
+            <div className="flex items-center gap-2 bg-gray-100 p-2 rounded-lg">
+              <Palette className="w-4 h-4 text-gray-700" />
               <select
                 value={currentTheme}
                 onChange={(e) => setCurrentTheme(e.target.value)}
-                className="p-2 border border-gray-300 rounded-md text-sm"
+                className="bg-transparent border-none focus:outline-none text-sm font-medium text-gray-900"
               >
                 {themeOptions.map(theme => (
-                  <option key={theme.value} value={theme.value}>
+                  <option 
+                    key={theme.value} 
+                    value={theme.value}
+                    className="bg-white text-gray-900"
+                  >
                     {theme.label}
                   </option>
                 ))}
@@ -239,8 +243,8 @@ const PresentationPreview = ({ presentationData, onClose, onDownload, template }
           </div>
         </div>
 
-        {/* Main Preview Area with Horizontal Scroll */}
-        <div className="flex-1 relative">
+        {/* Main Preview Area with smaller slides */}
+        <div className="flex-1 relative overflow-hidden">
           {/* Navigation Buttons */}
           <button
             onClick={() => scrollToSlide(currentSlide - 1)}
@@ -258,7 +262,7 @@ const PresentationPreview = ({ presentationData, onClose, onDownload, template }
             <ChevronRight className="w-6 h-6" />
           </button>
 
-          {/* Slides Container */}
+          {/* Updated Slides Container */}
           <div 
             ref={scrollContainerRef}
             className="flex overflow-x-auto snap-x snap-mandatory h-full hide-scrollbar"
@@ -271,9 +275,9 @@ const PresentationPreview = ({ presentationData, onClose, onDownload, template }
             {slides.map((slide, index) => (
               <div 
                 key={index}
-                className="flex-shrink-0 w-full h-full snap-center flex items-center justify-center p-8"
+                className="flex-shrink-0 w-full h-full snap-center flex items-center justify-center p-4 md:p-8"
               >
-                <div className="w-full max-w-4xl aspect-[16/9] relative">
+                <div className="w-full max-w-3xl aspect-[16/9] relative mx-auto"> {/* Changed max-w-4xl to max-w-3xl */}
                   <PreviewSlide 
                     content={slide} 
                     isActive={currentSlide === index} 
@@ -286,8 +290,8 @@ const PresentationPreview = ({ presentationData, onClose, onDownload, template }
         </div>
 
         {/* Updated Thumbnail Navigation */}
-        <div className="border-t border-gray-200 p-4 bg-gray-50">
-          <div className="flex gap-3 overflow-x-auto py-2 px-4 hide-scrollbar">
+        <div className="border-t border-gray-200 p-4 bg-gray-50" style={{ minHeight: '120px' }}>
+          <div className="flex gap-3 overflow-x-auto py-2 px-4 hide-scrollbar max-h-[100px]">
             {slides.map((slide, index) => (
               <button
                 key={index}
