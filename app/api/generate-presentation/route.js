@@ -3,10 +3,30 @@ import { NextResponse } from "next/server";
 import path from 'path';
 import fs from 'fs/promises';
 
-// Define custom presentation styling
-const customStyles = {
+const themes = {
+  modern: {
+    primary: '2563eb',
+    secondary: '3b82f6',
+    accent: '60a5fa',
+    background: 'FFFFFF',
+  },
+  tech: {
+    primary: '7c3aed',
+    secondary: '8b5cf6',
+    accent: 'a78bfa',
+    background: 'FFFFFF',
+  },
+  nature: {
+    primary: '059669',
+    secondary: '10b981',
+    accent: '34d399',
+    background: 'FFFFFF',
+  }
+};
+
+const createCustomStyles = (theme) => ({
   titleSlide: {
-    background: { color: "F5F5F5" },
+    background: { color: theme.background },
     shapes: [
       {
         type: "rect",
@@ -14,7 +34,7 @@ const customStyles = {
         y: 0,
         w: "100%",
         h: "20%",
-        fill: { color: "2E5090" }  // Dark blue header
+        fill: { color: theme.primary }
       },
       {
         type: "rect",
@@ -22,7 +42,17 @@ const customStyles = {
         y: "18%",
         w: "90%",
         h: "0.3%",
-        fill: { color: "FFD700" }  // Gold accent line
+        fill: { color: theme.accent }
+      },
+      // Decorative circle
+      {
+        type: "ellipse",
+        x: "70%",
+        y: "-10%",
+        w: "40%",
+        h: "40%",
+        fill: { color: theme.secondary },
+        opacity: 0.2
       }
     ],
     title: {
@@ -32,7 +62,7 @@ const customStyles = {
         w: "90%",
         h: "20%",
         fontSize: 44,
-        color: "2E5090",  // Dark blue
+        color: theme.primary,
         bold: true,
         align: "center",
         fontFace: "Arial"
@@ -45,14 +75,14 @@ const customStyles = {
         w: "80%",
         h: "15%",
         fontSize: 28,
-        color: "404040",  // Dark gray
+        color: "404040",
         align: "center",
         fontFace: "Arial"
       }
     }
   },
   contentSlide: {
-    background: { color: "FFFFFF" },
+    background: { color: theme.background },
     shapes: [
       {
         type: "rect",
@@ -60,7 +90,7 @@ const customStyles = {
         y: 0,
         w: "100%",
         h: "15%",
-        fill: { color: "2E5090" }  // Dark blue header
+        fill: { color: theme.primary }
       },
       {
         type: "rect",
@@ -68,7 +98,7 @@ const customStyles = {
         y: "14%",
         w: "90%",
         h: "0.2%",
-        fill: { color: "FFD700" }  // Gold accent line
+        fill: { color: theme.accent }
       }
     ],
     title: {
@@ -78,7 +108,7 @@ const customStyles = {
         w: "90%",
         h: "10%",
         fontSize: 32,
-        color: "FFFFFF",  // White text for header
+        color: "FFFFFF",
         bold: true,
         align: "left",
         fontFace: "Arial"
@@ -90,94 +120,98 @@ const customStyles = {
         y: "20%",
         w: "90%",
         fontSize: 24,
-        color: "333333",  // Dark gray text
+        color: "333333",
         bullet: { type: "bullet" },
-        bulletColor: "2E5090",  // Dark blue bullets
-        lineSpacing: 1.5,  // Increased line spacing
+        bulletColor: theme.primary,
+        lineSpacing: 1.5,
         fontFace: "Arial",
         breakLine: true,
-        paraSpaceBefore: 0.2,  // Add space before paragraphs
-        paraSpaceAfter: 0.2    // Add space after paragraphs
+        paraSpaceBefore: 0.2,
+        paraSpaceAfter: 0.2
       }
     }
   }
-};
+});
 
 export async function POST(req) {
   try {
-    const { slides } = await req.json();
+    const { slides, theme = 'modern', templateName } = await req.json();
     const pres = new pptxgen();
+    const currentTheme = themes[theme] || themes.modern;
+    const customStyles = createCustomStyles(currentTheme);
 
     slides.forEach((slide) => {
       const newSlide = pres.addSlide();
       const style = slide.type === 'title' ? customStyles.titleSlide : customStyles.contentSlide;
 
-      // Set background
+      // Apply background and shapes
       newSlide.background = style.background;
-
-      // Add shapes
-      style.shapes.forEach(shape => {
-        newSlide.addShape(shape.type, shape);
-      });
+      style.shapes.forEach(shape => newSlide.addShape(shape.type, shape));
 
       if (slide.type === 'title') {
+        // Title slide layout remains the same
         newSlide.addText(slide.title, style.title.options);
         if (slide.subtitle) {
           newSlide.addText(slide.subtitle, style.subtitle.options);
         }
       } else {
+        // Content slide layout
         newSlide.addText(slide.title, style.title.options);
         
-        // Process bullet points with descriptions
         if (slide.points?.length > 0) {
-          let currentY = 22; // Start position for the first point
+          let currentY = 25; // Start lower to avoid title overlap
 
           slide.points.forEach((point) => {
             if (typeof point === 'object') {
               // Add main point
               newSlide.addText(point.main, {
-                ...style.content.options,
+                x: "5%",
                 y: `${currentY}%`,
-                h: "auto",  // Automatically adjust height based on content
-                indentLevel: 0
+                w: "90%",
+                h: "auto",
+                fontSize: 24,
+                bold: true,
+                color: currentTheme.primary,
+                bullet: { type: "bullet" },
               });
-              
-              currentY += 6; // Move down for description
 
-              // Add description if it exists
+              currentY += 10; // Adjust position for description
+
+              // Add description if exists
               if (point.description) {
+                const estimatedHeight = Math.ceil(point.description.length / 50) * 4; // Adjust for longer descriptions
                 newSlide.addText(point.description, {
-                  ...style.content.options,
+                  x: "10%",
                   y: `${currentY}%`,
-                  h: "auto",  // Automatically adjust height based on content
+                  w: "85%",
+                  h: "auto",
                   fontSize: 20,
-                  color: '666666',
-                  indentLevel: 1,
-                  bullet: false
+                  italic: true,
+                  color: "666666",
+                  breakLine: true,
                 });
-
-                // Estimate additional space based on content length
-                currentY += point.description.length > 100 ? 10 : 6;
+                currentY += estimatedHeight + 2; // Add space for description
               }
-            } else {
-              // Simple point without description
-              newSlide.addText(point, {
-                ...style.content.options,
-                y: `${currentY}%`,
-                h: "auto"
-              });
-              currentY += 6;
-            }
 
-            // Add extra spacing between points
-            currentY += 2;
+              currentY += 4; // Add extra spacing between points
+            } else {
+              // Simple bullet point
+              newSlide.addText(point, {
+                x: "5%",
+                y: `${currentY}%`,
+                w: "90%",
+                h: "auto",
+                fontSize: 22,
+                bullet: { type: "bullet" },
+              });
+              currentY += 8;
+            }
           });
         }
       }
     });
 
     const buffer = await pres.write('base64');
-    // Create a proper data URL
     const url = `data:application/vnd.openxmlformats-officedocument.presentationml.presentation;base64,${buffer}`;
     return NextResponse.json({ url });
   } catch (error) {

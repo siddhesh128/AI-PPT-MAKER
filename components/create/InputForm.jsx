@@ -81,6 +81,22 @@ const InputForm = ({ topic, slides, style, isGenerating, onTopicChange, onSlides
           </div>
         </div>
 
+        {/* Theme Selection */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Presentation Theme
+          </label>
+          <select
+            value={style}
+            onChange={(e) => onStyleChange(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-transparent"
+          >
+            <option value="modern">Modern</option>
+            <option value="tech">Tech</option>
+            <option value="nature">Nature</option>
+          </select>
+        </div>
+
         {/* Template Selection */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">

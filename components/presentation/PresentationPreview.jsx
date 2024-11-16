@@ -1,14 +1,34 @@
-import React from 'react';
-import { ChevronLeft, ChevronRight, Download, Maximize2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { ChevronLeft, ChevronRight, Download, Maximize2, Palette } from 'lucide-react';
 import { X as XIcon } from 'lucide-react';
 
-const PreviewSlide = ({ content, isActive, template }) => {
+const PreviewSlide = ({ content, isActive, theme }) => {
   if (!content) return null;
+
+  const themes = {
+    modern: {
+      primary: '#2563eb',
+      secondary: '#3b82f6',
+      accent: '#60a5fa'
+    },
+    tech: {
+      primary: '#7c3aed',
+      secondary: '#8b5cf6',
+      accent: '#a78bfa'
+    },
+    nature: {
+      primary: '#059669',
+      secondary: '#10b981',
+      accent: '#34d399'
+    }
+  };
+
+  const currentTheme = themes[theme] || themes.modern;
 
   const baseStyles = {
     wrapper: "h-full relative",
-    header: "absolute top-0 left-0 w-full h-[15%] bg-[#2E5090]",
-    accentLine: "absolute top-[14%] left-[5%] w-[90%] h-[0.2%] bg-[#FFD700]",
+    header: `absolute top-0 left-0 w-full h-[15%]`,
+    accentLine: "absolute top-[14%] left-[5%] w-[90%] h-[0.2%]",
     title: "text-2xl font-semibold px-6 py-3 text-white relative z-10",
     content: "px-6 mt-[18%]",
     bulletPoints: "space-y-6 text-[#333333]",  // Increased spacing for descriptions
@@ -22,17 +42,17 @@ const PreviewSlide = ({ content, isActive, template }) => {
       ${isActive ? 'border-2 border-blue-500' : 'border border-gray-200'}`}>
       {content.type === 'title' ? (
         <div className="h-full flex flex-col items-center justify-center text-center bg-[#F5F5F5]">
-          <div className="absolute top-0 left-0 w-full h-[20%] bg-[#2E5090]" />
-          <div className="absolute top-[18%] left-[5%] w-[90%] h-[0.3%] bg-[#FFD700]" />
-          <h1 className="text-3xl font-bold mb-4 text-[#2E5090] relative z-10">{content.title}</h1>
+          <div className="absolute top-0 left-0 w-full h-[20%]" style={{ backgroundColor: currentTheme.primary }} />
+          <div className="absolute top-[18%] left-[5%] w-[90%] h-[0.3%]" style={{ backgroundColor: currentTheme.accent }} />
+          <h1 className="text-3xl font-bold mb-4 relative z-10" style={{ color: currentTheme.primary }}>{content.title}</h1>
           {content.subtitle && (
             <p className="text-xl text-[#404040] relative z-10">{content.subtitle}</p>
           )}
         </div>
       ) : (
         <div className={baseStyles.wrapper}>
-          <div className={baseStyles.header} />
-          <div className={baseStyles.accentLine} />
+          <div className={baseStyles.header} style={{ backgroundColor: currentTheme.primary }} />
+          <div className={baseStyles.accentLine} style={{ backgroundColor: currentTheme.accent }} />
           <h2 className={baseStyles.title}>{content.title}</h2>
           <div className={baseStyles.content}>
             <ul className={baseStyles.bulletPoints}>
@@ -57,7 +77,10 @@ const PreviewSlide = ({ content, isActive, template }) => {
   );
 };
 
-const PresentationPreview = ({ presentationData, onClose, onDownload }) => {
+// Update the component props to include template
+const PresentationPreview = ({ presentationData, onClose, onDownload, template }) => {
+  // Add theme state
+  const [currentTheme, setCurrentTheme] = useState('modern');
   // Add loading state for download
   const [isDownloading, setIsDownloading] = React.useState(false);
 
@@ -121,16 +144,31 @@ const PresentationPreview = ({ presentationData, onClose, onDownload }) => {
     }
   };
 
+  // Add theme options
+  const themeOptions = [
+    { value: 'modern', label: 'Modern' },
+    { value: 'tech', label: 'Tech' },
+    { value: 'nature', label: 'Nature' }
+  ];
+
+  // Update handleDownload to use the template prop
   const handleDownload = async () => {
     setIsDownloading(true);
     try {
+      if (!presentationData?.slides?.length) {
+        throw new Error('No presentation data available');
+      }
+  
+      const downloadData = {
+        slides: presentationData.slides,
+        template: template, // Use the template prop here
+        theme: currentTheme // Add theme to download data
+      };
+
       const response = await fetch('/api/generate-presentation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          slides: presentationData.slides,
-          templateName: template
-        }),
+        body: JSON.stringify(downloadData),
       });
       
       if (!response.ok) {
@@ -148,7 +186,7 @@ const PresentationPreview = ({ presentationData, onClose, onDownload }) => {
       document.body.removeChild(link);
     } catch (error) {
       console.error('Error downloading presentation:', error);
-      alert('Failed to download presentation. Please try again.');
+      alert(error.message || 'Failed to download presentation. Please try again.');
     } finally {
       setIsDownloading(false);
     }
@@ -172,8 +210,24 @@ const PresentationPreview = ({ presentationData, onClose, onDownload }) => {
         <div className="flex justify-between items-center p-4 border-b border-gray-200">
           <h2 className="text-2xl font-bold">Preview Presentation</h2>
           <div className="flex items-center gap-4">
+            {/* Add Theme Selector */}
+            <div className="flex items-center gap-2">
+              <Palette className="w-4 h-4" />
+              <select
+                value={currentTheme}
+                onChange={(e) => setCurrentTheme(e.target.value)}
+                className="p-2 border border-gray-300 rounded-md text-sm"
+              >
+                {themeOptions.map(theme => (
+                  <option key={theme.value} value={theme.value}>
+                    {theme.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
             <button
-              onClick={onDownload}
+              onClick={handleDownload}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
             >
               <Download className="w-4 h-4" />
@@ -223,6 +277,7 @@ const PresentationPreview = ({ presentationData, onClose, onDownload }) => {
                   <PreviewSlide 
                     content={slide} 
                     isActive={currentSlide === index} 
+                    theme={currentTheme}
                   />
                 </div>
               </div>
@@ -244,23 +299,23 @@ const PresentationPreview = ({ presentationData, onClose, onDownload }) => {
                 <div className="absolute inset-0 bg-white">
                   {slide.type === 'title' ? (
                     <div className="h-full flex flex-col items-center justify-center p-1 text-center">
-                      <div className="w-full h-[20%] bg-[#2E5090] absolute top-0" />
-                      <div className="w-[90%] h-[0.3%] bg-[#FFD700] absolute top-[18%]" />
-                      <p className="text-[8px] font-bold text-[#2E5090] mt-4 relative z-10 line-clamp-2 px-1">
+                      <div className="w-full h-[20%] absolute top-0" style={{ backgroundColor: currentTheme.primary }} />
+                      <div className="w-[90%] h-[0.3%] absolute top-[18%]" style={{ backgroundColor: currentTheme.accent }} />
+                      <p className="text-[8px] font-bold mt-4 relative z-10 line-clamp-2 px-1" style={{ color: currentTheme.primary }}>
                         {slide.title}
                       </p>
                     </div>
                   ) : (
                     <div className="h-full flex flex-col p-1">
-                      <div className="w-full h-[15%] bg-[#2E5090] absolute top-0" />
-                      <div className="w-[90%] h-[0.3%] bg-[#FFD700] absolute top-[14%] left-[5%]" />
+                      <div className="w-full h-[15%] absolute top-0" style={{ backgroundColor: currentTheme.primary }} />
+                      <div className="w-[90%] h-[0.3%] absolute top-[14%] left-[5%]" style={{ backgroundColor: currentTheme.accent }} />
                       <p className="text-[8px] font-bold text-white relative z-10 line-clamp-1 mb-2">
                         {slide.title}
                       </p>
                       <div className="mt-2 space-y-[3px]">
                         {slide.points?.slice(0, 2).map((point, i) => (
                           <div key={i} className="flex items-start gap-1">
-                            <span className="text-[6px] text-[#2E5090]">•</span>
+                            <span className="text-[6px]" style={{ color: currentTheme.primary }}>•</span>
                             <p className="text-[6px] text-gray-600 line-clamp-1 flex-1">
                               {typeof point === 'object' ? point.main : point}
                             </p>

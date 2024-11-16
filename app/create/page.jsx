@@ -149,7 +149,7 @@ const CreatePresentation = () => {
                 presentationData={presentationData}
                 onClose={() => setShowPreview(false)}
                 onDownload={handleDownload}
-                template={template}  // Add this line to pass the template
+                template={template}  // Ensure this prop is being passed
               />
             )}
           </div>
