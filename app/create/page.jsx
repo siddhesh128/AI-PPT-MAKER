@@ -1,10 +1,12 @@
 'use client'
 import React, { useState } from 'react';
 import InputForm from '../../components/create/InputForm';
-import OutlineEditor from '../..//components/create/OutlineEditor';
+import OutlineEditor from '../../components/create/OutlineEditor';
 import LoadingState from '../../components/create/LoadingState';
 import PresentationPreview from '../../components/presentation/PresentationPreview';
-// Remove Navigation import
+import Header from '../../components/create/Header';
+import { generateOutlineAPI, downloadPresentation } from '../../services/presentationService';
+import { transformOutlineToPresentation } from '../../utils/presentationTransformer';
 
 const CreatePresentation = () => {
   const [step, setStep] = useState('input');
@@ -17,26 +19,12 @@ const CreatePresentation = () => {
   const [presentationData, setPresentationData] = useState(null);
   const [template, setTemplate] = useState('');
 
-  const generateOutlineAPI = async (topic, slides, style) => {
-    try {
-      const response = await fetch('/api/presentation', {  // Changed from /api/generate-outline
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ topic, slides, style }),
-      });
+  const handleTemplateChange = (newTemplate) => {
+    setTemplate(newTemplate);
+  };
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to generate outline');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('API Error:', error);
-      throw error;
-    }
+  const handleStyleChange = (newStyle) => {
+    setStyle(newStyle);
   };
 
   const handleGenerateOutline = async () => {
@@ -53,52 +41,13 @@ const CreatePresentation = () => {
     }
   };
 
-  const transformOutlineToPresentation = (outline) => {
-    if (!outline || !outline.sections) {
-      throw new Error('Invalid outline format');
-    }
-  
-    const slides = [];
-  
-    // Add title slide
-    slides.push({
-      type: 'title',
-      title: outline.title,
-      subtitle: outline.description
-    });
-  
-    // Transform sections into content slides
-    outline.sections.forEach(section => {
-      slides.push({
-        type: 'content',
-        title: section.title,
-        points: section.points.map(point => {
-          if (typeof point === 'object' && point.main) {
-            return {
-              main: point.main,
-              description: point.description
-            };
-          }
-          return point;
-        })
-      });
-    });
-  
-    return { slides };
-  };
-
   const handleGeneratePresentation = async () => {
     setIsGenerating(true);
     setStep('generating');
     try {
-      if (!outline) {
-        throw new Error('Outline is missing');
-      }
-      const presentationData = transformOutlineToPresentation(outline);
-      if (!presentationData.slides || presentationData.slides.length === 0) {
-        throw new Error('Failed to transform outline to presentation');
-      }
-      setPresentationData(presentationData);
+      if (!outline) throw new Error('Outline is missing');
+      const data = transformOutlineToPresentation(outline);
+      setPresentationData(data);
       setShowPreview(true);
     } catch (error) {
       console.error('Error generating presentation:', error);
@@ -114,31 +63,9 @@ const CreatePresentation = () => {
       if (!presentationData?.slides?.length) {
         throw new Error('No presentation data available');
       }
-  
-      const downloadData = {
-        slides: presentationData.slides,
-        templateName: template || undefined
-      };
-  
-      const response = await fetch('/api/generate-presentation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(downloadData),
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to generate presentation');
-      }
-  
-      if (!data.url) {
-        throw new Error('No download URL received');
-      }
-  
-      // Create and trigger download
+      const url = await downloadPresentation(presentationData, template);
       const link = document.createElement('a');
-      link.href = data.url;
+      link.href = url;
       link.download = 'presentation.pptx';
       document.body.appendChild(link);
       link.click();
@@ -151,32 +78,7 @@ const CreatePresentation = () => {
 
   return (
     <>
-      <header className="bg-white border-b border-gray-200">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">Create Presentation</h1>
-            <div className="flex items-center space-x-4">
-              {/* Progress Steps */}
-              <div className="hidden md:flex items-center space-x-4">
-                {['input', 'outline', 'generating'].map((stepName, index) => (
-                  <React.Fragment key={stepName}>
-                    {index > 0 && <div className="w-8 h-px bg-gray-300" />}
-                    <div className={`flex items-center space-x-2 ${step === stepName ? 'text-blue-600' : 'text-gray-400'}`}>
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                        step === stepName ? 'border-blue-600' : 'border-gray-400'
-                      }`}>
-                        <span>{index + 1}</span>
-                      </div>
-                      <span>{stepName.charAt(0).toUpperCase() + stepName.slice(1)}</span>
-                    </div>
-                  </React.Fragment>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
+      <Header step={step} />
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
           {step === 'input' && (
@@ -188,8 +90,8 @@ const CreatePresentation = () => {
               isGenerating={isGenerating}
               onTopicChange={setTopic}
               onSlidesChange={setSlides}
-              onStyleChange={setStyle}
-              onTemplateChange={setTemplate}
+              onStyleChange={handleStyleChange}
+              onTemplateChange={handleTemplateChange}
               onGenerate={handleGenerateOutline}
             />
           )}
@@ -207,7 +109,7 @@ const CreatePresentation = () => {
               presentationData={presentationData}
               onClose={() => setShowPreview(false)}
               onDownload={handleDownload}
-              template={template}  // Ensure this prop is being passed
+              template={template}
             />
           )}
         </div>
