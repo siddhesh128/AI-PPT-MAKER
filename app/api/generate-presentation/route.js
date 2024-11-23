@@ -28,31 +28,36 @@ export async function POST(req) {
         }
       } else {
         // Content slide layout
-        newSlide.addText(slide.title, style.title.options);
+        // Add title at the top
+        newSlide.addText(slide.title, {
+          ...style.title.options,
+          w: '100%',  // Full width for title
+          y: '5%'     // Position at top
+        });
 
-        // Add image if present
+        // Add image on the right side if present
         if (slide.image) {
           newSlide.addImage({
             path: slide.image.url,
-            x: '30%',
-            y: '20%',
-            w: '30%',
-            h: '30%',
+            x: '55%',    // Start at 55% from left
+            y: '30%',    // Start below title
+            w: '40%',    // Take 40% of slide width
+            h: '50%',    // Take 70% of slide height
             sizing: { type: 'contain' }
           });
         }
-
-        // Adjust starting position for points based on whether there's an image
-        let currentY = slide.image ? 55 : 25;
         
+        // Add points container on the left side
         if (slide.points?.length > 0) {
+          let currentY = 20; // Start below title
+          
           slide.points.forEach((point) => {
             if (typeof point === 'object') {
               // Add main point
               newSlide.addText(point.main, {
                 x: "5%",
                 y: `${currentY}%`,
-                w: "90%",
+                w: "60%", // Limit width to left side
                 h: "auto",
                 fontSize: 20,
                 bold: true,
@@ -60,33 +65,33 @@ export async function POST(req) {
                 bullet: { type: "bullet" },
               });
 
-              currentY += 7; // Adjust position for description
+              currentY += 12; // Increased from 7/10 to 12 for more space
 
               // Add description if exists
               if (point.description) {
-                const estimatedHeight = Math.ceil(point.description.length / 50) * 4; // Adjust for longer descriptions
+                const estimatedHeight = Math.ceil(point.description.length / 30) * 4;
                 newSlide.addText(point.description, {
-                  x: "10%",
+                  x: "8%",
                   y: `${currentY}%`,
-                  w: "85%",
+                  w: "42%", // Slightly less width for indentation
                   h: "auto",
-                  fontSize: 10,
+                  fontSize: 16,
                   italic: true,
                   color: "666666",
                   breakLine: true,
                 });
-                currentY += estimatedHeight + 2; // Add space for description
+                currentY += estimatedHeight + 5; // Increased from 2 to 5 for more space after description
               }
 
-              currentY += 2; // Add extra spacing between points
+              currentY += 5; // Added extra spacing between point groups
             } else {
               // Simple bullet point
               newSlide.addText(point, {
                 x: "5%",
                 y: `${currentY}%`,
-                w: "90%",
+                w: "45%", // Limit width to left side
                 h: "auto",
-                fontSize: 22,
+                fontSize: 18,
                 bullet: { type: "bullet" },
               });
               currentY += 8;

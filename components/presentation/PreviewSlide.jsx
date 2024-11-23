@@ -7,7 +7,6 @@ export const PreviewSlide = ({ content, theme, isActive }) => {
 
   return (
     <div className="w-full h-full bg-white rounded-lg shadow-lg relative overflow-hidden">
-      {/* Background shapes */}
       {type === 'title' ? (
         <>
           <div 
@@ -35,58 +34,67 @@ export const PreviewSlide = ({ content, theme, isActive }) => {
           </div>
         </>
       ) : (
-        <>
+        <div className="h-full flex flex-col">
+          {/* Header area */}
           <div 
-            className="absolute top-0 left-0 w-full h-[15%]"
+            className="w-full h-[15%] relative"
             style={{ backgroundColor: `#${currentTheme.primary}` }}
-          />
-          <div 
-            className="absolute top-[14%] left-[5%] w-[90%] h-[0.2%]"
-            style={{ backgroundColor: `#${currentTheme.accent}` }}
-          />
-          <div className="h-full flex flex-col p-8">
-            <h2 className="text-3xl font-bold mb-6 text-white relative z-10">
+          >
+            <h2 className="text-2xl font-bold text-white px-8 py-4">
               {title}
             </h2>
-            
-            {image && (
-              <div className="w-[30%] mx-auto h-[30%] mb-6 ml-[30%]">
-                <img 
-                  src={image.url} 
-                  alt={image.alt || 'Slide image'} 
-                  className="w-full h-full object-contain"
-                />
-              </div>
-            )}
-            
-            <div className="space-y-4 mt-4">
+            <div 
+              className="absolute bottom-0 left-[5%] w-[90%] h-[2px]"
+              style={{ backgroundColor: `#${currentTheme.accent}` }}
+            />
+          </div>
+
+          {/* Content area */}
+          <div className="flex h-[85%] p-8">
+            {/* Left side - Points */}
+            <div className="w-[50%] space-y-4 pr-4">
               {points?.map((point, index) => (
-                <div key={index} className="ml-6">
+                <div key={index} className="mb-6">
                   {typeof point === 'object' ? (
-                    <div className="mb-2">
-                      <p className="text-xl flex items-start font-bold"
-                         style={{ color: `#${currentTheme.primary}` }}>
+                    <>
+                      <p 
+                        className="text-lg font-bold flex items-start"
+                        style={{ color: `#${currentTheme.primary}` }}
+                      >
                         <span className="mr-2">•</span>
-                        {point.main}
+                        <span className="line-clamp-1">{point.main}</span>
                       </p>
                       {point.description && (
-                        <p className="text-[#666666] ml-6 mt-1 text-base italic">
+                        <p className="text-sm text-gray-600 ml-6 mt-2 italic">
                           {point.description}
                         </p>
                       )}
-                    </div>
+                    </>
                   ) : (
-                    <p className="text-xl flex items-start"
-                       style={{ color: `#${currentTheme.primary}` }}>
+                    <p 
+                      className="text-lg flex items-start"
+                      style={{ color: `#${currentTheme.primary}` }}
+                    >
                       <span className="mr-2">•</span>
-                      {point}
+                      <span className="line-clamp-1">{point}</span>
                     </p>
                   )}
                 </div>
               ))}
             </div>
+
+            {/* Right side - Image */}
+            {image && (
+              <div className="w-[45%] flex items-center justify-center">
+                <img 
+                  src={image.url} 
+                  alt={title}
+                  className="max-w-full max-h-full object-contain"
+                />
+              </div>
+            )}
           </div>
-        </>
+        </div>
       )}
     </div>
   );
