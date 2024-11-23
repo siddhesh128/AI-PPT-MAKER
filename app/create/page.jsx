@@ -7,6 +7,7 @@ import PresentationPreview from '../../components/presentation/PresentationPrevi
 import Header from '../../components/create/Header';
 import { generateOutlineAPI, downloadPresentation } from '../../services/presentationService';
 import { transformOutlineToPresentation } from '../../utils/presentationTransformer';
+import { generateImageForSlide } from '../../utils/imageGenerator';
 
 const CreatePresentation = () => {
   const [step, setStep] = useState('input');
@@ -18,6 +19,7 @@ const CreatePresentation = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [presentationData, setPresentationData] = useState(null);
   const [template, setTemplate] = useState('');
+  const [generationProgress, setGenerationProgress] = useState({ current: 0, total: 0 });
 
   const handleTemplateChange = (newTemplate) => {
     setTemplate(newTemplate);
@@ -41,13 +43,49 @@ const CreatePresentation = () => {
     }
   };
 
+  const generateImagesForSlides = async (slides) => {
+    console.log('Starting image generation for slides');
+    const total = slides.length;
+    setGenerationProgress({ current: 0, total });
+    
+    const slidesWithImages = await Promise.all(slides.map(async (slide, index) => {
+      try {
+        // Generate image based on slide title and first point
+        const searchQuery = slide.type === 'title' ? 
+          slide.title : 
+          `${slide.title} ${slide.points?.[0]?.main || slide.points?.[0] || ''}`;
+        
+        console.log(`Generating image for slide ${index + 1}/${total}: "${searchQuery}"`);
+        
+        const imageData = await generateImageForSlide(searchQuery);
+        setGenerationProgress(prev => ({ ...prev, current: index + 1 }));
+        
+        return { ...slide, image: imageData };
+      } catch (error) {
+        console.error(`Failed to generate image for slide ${index + 1}:`, error);
+        return slide;
+      }
+    }));
+
+    console.log('Completed image generation for all slides');
+    return slidesWithImages;
+  };
+
   const handleGeneratePresentation = async () => {
     setIsGenerating(true);
     setStep('generating');
     try {
       if (!outline) throw new Error('Outline is missing');
-      const data = transformOutlineToPresentation(outline);
-      setPresentationData(data);
+      
+      // Transform outline to initial presentation structure
+      const initialData = transformOutlineToPresentation(outline);
+      console.log('Initial presentation structure created');
+
+      // Generate images for slides
+      const slidesWithImages = await generateImagesForSlides(initialData.slides);
+      const finalData = { ...initialData, slides: slidesWithImages };
+      
+      setPresentationData(finalData);
       setShowPreview(true);
     } catch (error) {
       console.error('Error generating presentation:', error);

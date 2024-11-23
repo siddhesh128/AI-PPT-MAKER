@@ -1,11 +1,25 @@
-import { Loader } from 'lucide-react';
+import React from 'react';
 
-const LoadingState = () => (
-  <div className="bg-white rounded-lg shadow-sm p-12 mb-8 text-center">
-    <Loader className="w-12 h-12 animate-spin mx-auto mb-6 text-blue-600" />
-    <h2 className="text-2xl font-semibold mb-2">Generating Your Presentation</h2>
-    <p className="text-gray-600">This may take a few moments...</p>
-  </div>
-);
+const LoadingState = ({ progress }) => {
+  return (
+    <div className="text-center p-8">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+      <h3 className="text-xl font-semibold mb-2">Generating Your Presentation</h3>
+      {progress && (
+        <div className="mt-4">
+          <div className="w-full bg-gray-200 rounded-full h-2.5">
+            <div 
+              className="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
+              style={{ width: `${(progress.current / progress.total) * 100}%` }}
+            ></div>
+          </div>
+          <p className="text-sm text-gray-600 mt-2">
+            Generating images: {progress.current} of {progress.total} slides
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default LoadingState;
