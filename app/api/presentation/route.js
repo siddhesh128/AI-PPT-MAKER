@@ -15,32 +15,56 @@ function extractJSONFromText(text) {
     // First attempt: Try to parse the entire text as JSON
     return JSON.parse(text);
   } catch {
-    // Second attempt: Try to find JSON content between curly braces
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const jsonStr = jsonMatch[0];
-      try {
-        return JSON.parse(jsonStr);
-      } catch {
-        // If parsing fails, try cleaning the JSON string
-        return JSON.parse(cleanJSONString(jsonStr));
+    try {
+      // Second attempt: Try to find JSON content between curly braces
+      const matches = text.match(/\{[\s\S]*\}/g);
+      if (matches) {
+        // Try each matched JSON object
+        for (const match of matches) {
+          try {
+            const cleaned = cleanJSONString(match);
+            return JSON.parse(cleaned);
+          } catch (e) {
+            continue; // Try next match if this one fails
+          }
+        }
       }
+      
+      // If we get here, no valid JSON was found
+      throw new Error('No valid JSON found in response');
+    } catch (e) {
+      // If all attempts fail, try to extract structured data from the error message
+      const fallbackResponse = {
+        title: "Error Processing Request",
+        sections: [{
+          title: "System Message",
+          points: [{
+            main: "An error occurred while processing the request",
+            description: "Please try again with a different topic or number of slides",
+            code: null,
+            language: null
+          }]
+        }]
+      };
+      console.error('JSON extraction failed:', text);
+      return fallbackResponse;
     }
-    throw new Error('No valid JSON object found in response');
   }
 }
 
 function cleanJSONString(jsonStr) {
   return jsonStr
-    // Fix common JSON issues
-    .replace(/[\u201C\u201D\u201E\u201F\u2033\u2036]/g, '"') // Replace smart quotes
-    .replace(/[\u2018\u2019\u201A\u201B\u2032\u2035]/g, "'") // Replace smart single quotes
-    .replace(/\n\s*\n/g, '\n') // Remove multiple newlines
-    .replace(/\t/g, '    ') // Replace tabs with spaces
-    // Fix trailing commas
+    .replace(/[\u201C\u201D\u201E\u201F\u2033\u2036]/g, '"')
+    .replace(/[\u2018\u2019\u201A\u201B\u2032\u2035]/g, "'")
+    .replace(/\n\s*\n/g, '\n')
+    .replace(/\t/g, '    ')
     .replace(/,(\s*[}\]])/g, '$1')
-    // Fix missing quotes around property names
     .replace(/([{,]\s*)(\w+)(\s*:)/g, '$1"$2"$3')
+    // Additional cleaning for common AI response issues
+    .replace(/\\n/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/"\s+"/g, '" "')
+    .replace(/}\s*{/g, '},{')
     .trim();
 }
 
@@ -94,6 +118,11 @@ export async function POST(request) {
     const result = await model.generateContent(prompt);
     const response = await result.response;
     let text = response.text();
+
+    // Add validation for empty or invalid response
+    if (!text || typeof text !== 'string') {
+      throw new Error('Empty or invalid response from AI');
+    }
 
     try {
       // Process and validate the JSON
