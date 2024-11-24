@@ -1,7 +1,17 @@
 'use client'
 import { Edit2, Send } from 'lucide-react';
+import { useEffect } from 'react';
+import Prism from 'prismjs';
+import 'prismjs/themes/prism.css';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-python';
+import 'prismjs/components/prism-java';
 
 const OutlineEditor = ({ outline, onOutlineChange, onBack, onGenerate }) => {
+  useEffect(() => {
+    Prism.highlightAll();
+  }, [outline]);
+
   return (
     <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
       <h2 className="text-xl font-semibold mb-4">Presentation Outline</h2>
@@ -67,6 +77,34 @@ const OutlineEditor = ({ outline, onOutlineChange, onBack, onGenerate }) => {
                     rows={2}
                     placeholder="Description..."
                   />
+                  {/* Add code editor if point has code */}
+                  {point.code && (
+                    <div className="mt-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Code Sample ({point.language || 'javascript'})
+                      </label>
+                      <div className="relative">
+                        <textarea
+                          value={point.code}
+                          onChange={(e) => {
+                            const newSections = [...outline.sections];
+                            newSections[sIndex].points[pIndex] = {
+                              ...point,
+                              code: e.target.value
+                            };
+                            onOutlineChange({...outline, sections: newSections});
+                          }}
+                          className="w-full px-4 py-3 font-mono text-sm bg-gray-50 border border-gray-200 rounded-lg"
+                          rows={5}
+                        />
+                        <pre className="absolute top-0 left-0 pointer-events-none">
+                          <code className={`language-${point.language || 'javascript'}`}>
+                            {point.code}
+                          </code>
+                        </pre>
+                      </div>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>

@@ -53,8 +53,29 @@ export const fetchImageForKeyword = async (keyword) => {
 
 export const downloadPresentation = async (presentationData, template) => {
   try {
+    // Debug log for code blocks
+    console.log('Code blocks check:', presentationData.slides.map(slide => ({
+      title: slide.title,
+      codeBlocks: slide.points?.filter(p => p.code).length || 0
+    })));
+
+    // Ensure code blocks are properly structured
+    const processedSlides = presentationData.slides.map(slide => {
+      if (slide.points) {
+        return {
+          ...slide,
+          points: slide.points.map(point => ({
+            ...point,
+            code: point.code || null,
+            language: point.language || 'javascript'
+          }))
+        };
+      }
+      return slide;
+    });
+
     const downloadData = {
-      slides: presentationData.slides,
+      slides: processedSlides,
       images: presentationData.images, // Make sure images are included
       templateName: template || undefined,
       theme: presentationData.theme || 'modern'
@@ -68,6 +89,11 @@ export const downloadPresentation = async (presentationData, template) => {
 
     console.log('Sending presentation data:', {
       slideCount: downloadData.slides.length,
+      slideContent: downloadData.slides.map(s => ({
+        type: s.type,
+        pointsCount: s.points?.length,
+        hasCode: s.points?.some(p => p.code)
+      })),
       imageCount: Object.keys(downloadData.images || {}).length,
       imageKeys: Object.keys(downloadData.images || {}),
       template: downloadData.templateName,

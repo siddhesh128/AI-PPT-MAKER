@@ -116,8 +116,8 @@ const PresentationPreview = ({ presentationData, onClose, onDownload, template }
           {/* Slides container */}
           <div ref={scrollContainerRef} className="flex overflow-x-auto snap-x snap-mandatory h-full hide-scrollbar">
             {slides.map((slide, index) => (
-              <div key={index} className="flex-shrink-0 w-full h-full snap-center flex items-center justify-center p-4 md:p-8">
-                <div className="w-full max-w-3xl aspect-[16/9] relative mx-auto">
+              <div key={index} className="flex-shrink-0 w-full h-full snap-center flex items-center justify-center p-2 md:p-4">
+                <div className="w-full max-w-4xl aspect-[16/9] relative mx-auto">
                   <PreviewSlide 
                     content={{ ...slide, index }}
                     isActive={currentSlide === index}

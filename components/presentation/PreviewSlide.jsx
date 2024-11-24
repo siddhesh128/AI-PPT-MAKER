@@ -1,6 +1,23 @@
 import React from 'react';
 import { themes } from '../../themes/presentationThemes';
 
+const CodeBlock = ({ code, language }) => (
+  <div className="mt-4 w-full rounded-lg overflow-hidden border border-gray-700">
+    {/* Editor-like header */}
+    <div className="bg-[#1E1E1E] px-4 py-2 flex items-center justify-between">
+      <span className="text-gray-400 text-sm">{language || 'javascript'}</span>
+    </div>
+    {/* Code content */}
+    <div className="bg-[#1E1E1E] p-4">
+      <pre className="overflow-x-auto">
+        <code className="text-white text-sm font-mono whitespace-pre-wrap break-all">
+          {code}
+        </code>
+      </pre>
+    </div>
+  </div>
+);
+
 export const PreviewSlide = ({ content, theme, isActive }) => {
   const { title, subtitle, points, type, image } = content;
   const currentTheme = themes[theme] || themes.modern;
@@ -50,33 +67,41 @@ export const PreviewSlide = ({ content, theme, isActive }) => {
           </div>
 
           {/* Content area */}
-          <div className="flex h-[85%] p-8">
+          <div className="flex h-[85%] p-4">
             {/* Left side - Points */}
-            <div className="w-[50%] space-y-4 pr-4">
+            <div className="w-[55%] space-y-2 pr-4 overflow-y-auto">
               {points?.map((point, index) => (
-                <div key={index} className="mb-6">
+                <div key={index} className="mb-4">
                   {typeof point === 'object' ? (
                     <>
                       <p 
-                        className="text-lg font-bold flex items-start"
+                        className="text-base font-bold flex items-start"
                         style={{ color: `#${currentTheme.primary}` }}
                       >
                         <span className="mr-2">•</span>
-                        <span className="line-clamp-1">{point.main}</span>
+                        <span className="line-clamp-2">{point.main}</span>
                       </p>
                       {point.description && (
-                        <p className="text-sm text-gray-600 ml-6 mt-2 italic">
+                        <p className="text-xs text-gray-600 ml-6 mt-1 italic line-clamp-2">
                           {point.description}
                         </p>
+                      )}
+                      {point.code && (
+                        <div className="ml-6 mt-1 w-[85%]">
+                          <CodeBlock 
+                            code={point.code}
+                            language={point.language}
+                          />
+                        </div>
                       )}
                     </>
                   ) : (
                     <p 
-                      className="text-lg flex items-start"
+                      className="text-base flex items-start"
                       style={{ color: `#${currentTheme.primary}` }}
                     >
                       <span className="mr-2">•</span>
-                      <span className="line-clamp-1">{point}</span>
+                      <span className="line-clamp-2">{point}</span>
                     </p>
                   )}
                 </div>
@@ -85,11 +110,11 @@ export const PreviewSlide = ({ content, theme, isActive }) => {
 
             {/* Right side - Image */}
             {image && (
-              <div className="w-[45%] flex items-center justify-center">
+              <div className="w-[40%] flex items-center justify-center overflow-hidden">
                 <img 
                   src={image.url} 
                   alt={title}
-                  className="max-w-full max-h-full object-contain"
+                  className="max-w-full max-h-[90%] object-contain"
                 />
               </div>
             )}

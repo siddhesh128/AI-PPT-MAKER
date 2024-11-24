@@ -8,7 +8,7 @@ export const createCustomStyles = (theme) => ({
         y: 0,
         w: "100%",
         h: "20%",
-        fill: { color: theme.primary }
+        fill: { color: theme.primary },
       },
       {
         type: "rect",
@@ -16,7 +16,7 @@ export const createCustomStyles = (theme) => ({
         y: "18%",
         w: "90%",
         h: "0.3%",
-        fill: { color: theme.accent }
+        fill: { color: theme.accent },
       },
       {
         type: "ellipse",
@@ -25,8 +25,8 @@ export const createCustomStyles = (theme) => ({
         w: "40%",
         h: "40%",
         fill: { color: theme.secondary },
-        opacity: 0.2
-      }
+        opacity: 0.2,
+      },
     ],
     title: {
       options: {
@@ -38,8 +38,8 @@ export const createCustomStyles = (theme) => ({
         color: theme.primary,
         bold: true,
         align: "center",
-        fontFace: "Arial"
-      }
+        fontFace: "Arial",
+      },
     },
     subtitle: {
       options: {
@@ -50,9 +50,9 @@ export const createCustomStyles = (theme) => ({
         fontSize: 28,
         color: "404040",
         align: "center",
-        fontFace: "Arial"
-      }
-    }
+        fontFace: "Arial",
+      },
+    },
   },
   contentSlide: {
     background: { color: theme.background },
@@ -63,7 +63,7 @@ export const createCustomStyles = (theme) => ({
         y: 0,
         w: "100%",
         h: "15%",
-        fill: { color: theme.primary }
+        fill: { color: theme.primary },
       },
       {
         type: "rect",
@@ -71,8 +71,8 @@ export const createCustomStyles = (theme) => ({
         y: "14%",
         w: "90%",
         h: "0.2%",
-        fill: { color: theme.accent }
-      }
+        fill: { color: theme.accent },
+      },
     ],
     title: {
       options: {
@@ -80,12 +80,12 @@ export const createCustomStyles = (theme) => ({
         y: "4%",
         w: "90%",
         h: "10%",
-        fontSize: 32,
+        fontSize: 24,
         color: "FFFFFF",
         bold: true,
         align: "left",
-        fontFace: "Arial"
-      }
+        fontFace: "Arial",
+      },
     },
     content: {
       options: {
@@ -100,8 +100,8 @@ export const createCustomStyles = (theme) => ({
         fontFace: "Arial",
         breakLine: true,
         paraSpaceBefore: 0.2,
-        paraSpaceAfter: 0.2
-      }
-    }
-  }
+        paraSpaceAfter: 0.2,
+      },
+    },
+  },
 });

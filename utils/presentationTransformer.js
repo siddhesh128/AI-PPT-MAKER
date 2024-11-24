@@ -1,26 +1,22 @@
-
 export const transformOutlineToPresentation = (outline) => {
-  if (!outline || !outline.sections) {
-    throw new Error('Invalid outline format');
-  }
-
-  const slides = [
-    {
-      type: 'title',
-      title: outline.title,
-      subtitle: outline.description
-    },
-    ...outline.sections.map(section => ({
-      type: 'content',
-      title: section.title,
-      points: section.points.map(point => {
-        if (typeof point === 'object' && point.main) {
-          return { main: point.main, description: point.description };
-        }
-        return point;
-      })
-    }))
-  ];
-
-  return { slides };
+  console.log('Transforming outline with code blocks:', outline); // Debug log
+  
+  return {
+    slides: [
+      {
+        type: 'title',
+        title: outline.title,
+      },
+      ...outline.sections.map(section => ({
+        type: 'content',
+        title: section.title,
+        points: section.points.map(point => ({
+          main: point.main,
+          description: point.description,
+          code: point.code || null,
+          language: point.language || 'javascript'
+        }))
+      }))
+    ]
+  };
 };

@@ -29,7 +29,9 @@ export const generateOutlineAPI = async (topic, slides, style) => {
         title: section.title,
         points: section.points.map(point => ({
           main: point.main,
-          description: point.description
+          description: point.description,
+          code: point.code || null,
+          language: point.language || 'javascript'
         }))
       }))
     ]

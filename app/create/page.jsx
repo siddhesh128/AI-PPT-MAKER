@@ -81,6 +81,14 @@ const CreatePresentation = () => {
       const initialData = transformOutlineToPresentation(outline);
       console.log('Initial presentation structure created');
 
+      // Debug log
+      console.log('Presentation data with code blocks:', 
+        initialData.slides.map(slide => ({
+          title: slide.title,
+          hasCode: slide.points?.some(p => p.code)
+        }))
+      );
+
       // Generate images for slides
       const slidesWithImages = await generateImagesForSlides(initialData.slides);
       const finalData = { ...initialData, slides: slidesWithImages };

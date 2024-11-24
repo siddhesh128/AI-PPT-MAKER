@@ -42,7 +42,7 @@ export default function RootLayout({ children }) {
           {/* Backdrop for mobile */}
           {!isCollapsed && (
             <div 
-              className="md:hidden fixed inset-0 bg-black/20 z-10"
+              className="md:hidden fixed inset-0 bg-black/20 z-40"
               onClick={() => setIsCollapsed(true)}
             />
           )}
@@ -50,7 +50,7 @@ export default function RootLayout({ children }) {
           {/* Vertical Navigation */}
           <div 
             className={`fixed left-0 top-0 h-screen bg-white border-r border-gray-200 
-              transition-all duration-300 ease-in-out shadow-sm hover:shadow-md z-20
+              transition-all duration-300 ease-in-out shadow-sm hover:shadow-md z-50
               ${isCollapsed ? 'w-20' : 'w-64'} 
               ${isCollapsed ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}
           >
@@ -115,8 +115,8 @@ export default function RootLayout({ children }) {
             </nav>
           </div>
           <div className={`flex-1 transition-all duration-300 ease-in-out 
-            ${isCollapsed ? 'md:pl-20' : 'pl-0 md:pl-64'} min-h-screen bg-gray-50`}>
-            <div className="sticky top-0 z-10 bg-white border-b border-gray-200 md:hidden">
+            ${isCollapsed ? 'md:ml-20' : 'ml-0 md:ml-64'} min-h-screen bg-gray-50`}>
+            <div className="sticky top-0 z-30 bg-white border-b border-gray-200 md:hidden">
               <div className="flex items-center h-16 px-4">
                 <button 
                   onClick={() => setIsCollapsed(!isCollapsed)}
@@ -127,7 +127,7 @@ export default function RootLayout({ children }) {
                 <span className="ml-3 text-lg font-semibold text-gray-800">SlideMaster AI</span>
               </div>
             </div>
-            <main className="p-4">
+            <main className="relative">
               {children}
             </main>
           </div>
