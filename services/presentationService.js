@@ -1,20 +1,26 @@
 export const generateOutlineAPI = async (topic, slides, style) => {
   try {
+    if (!topic || !slides || !style) {
+      throw new Error('Missing required parameters');
+    }
+
     const response = await fetch('/api/presentation', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ topic, slides, style }),
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to generate outline');
+    const data = await response.json();
+
+    if (!response.ok || data.status === 'error') {
+      throw new Error(data.error || data.details || 'Failed to generate outline');
     }
 
-    return await response.json();
+    return data.data || data;
+
   } catch (error) {
     console.error('API Error:', error);
-    throw error;
+    throw new Error(`Failed to generate presentation: ${error.message}`);
   }
 };
 
