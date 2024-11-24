@@ -1,7 +1,8 @@
 {
     "functions": {
-      "api/presentation": {
+      "app/api/presentation/route.js": {
         "maxDuration": 60 
+      }
     }
   }
-}
+  
