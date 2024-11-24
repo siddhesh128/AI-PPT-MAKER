@@ -71,7 +71,6 @@ export async function POST(request) {
     const response = await result.response;
     const rawText = await response.text(); // Capture raw text
 
-    console.log("Raw AI response text:", rawText);
 
     try {
       // Process and validate the JSON output
